@@ -6,8 +6,8 @@ extern crate test;
 pub struct Perceptron {
     learning_rate: f64, // constant value to alter the weights by per training iteration
     epochs: usize, // Number of times to iterate while training.
-    weights: Vec<f64>,
-    base_weight: f64
+    weights: Vec<f64>, // The other values used in predictions, they are multiplied with the input values when calculating activation.
+    base_weight: f64 // The first value used in predictions, not multiplied with input values when calculating activation.
 }
 
 
