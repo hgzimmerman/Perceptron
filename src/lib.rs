@@ -3,7 +3,7 @@
 extern crate test;
 
 #[derive(Debug)]
-struct Perceptron {
+pub struct Perceptron {
     learning_rate: f64, // constant value to alter the weights by per training iteration
     epochs: isize, // Number of times to iterate while training
     weights: Vec<f64>,
@@ -12,7 +12,7 @@ struct Perceptron {
 
 
 impl Perceptron {
-    fn new(learning_rate: f64, epochs: isize) -> Perceptron {
+    pub fn new(learning_rate: f64, epochs: isize) -> Perceptron {
         Perceptron {
             learning_rate: learning_rate,
             epochs: epochs,
@@ -24,7 +24,6 @@ impl Perceptron {
     /// Output should probably be between 0.0 and 1.0 (I have no clue)
     /// As a thought experiment, I will throw some values around
     fn net_input(&self, input_vector: &Vec<f64>) -> f64 {
-
         let prediction = input_vector
             .iter()
             .zip(self.weights.iter())
@@ -35,7 +34,7 @@ impl Perceptron {
         prediction
     }
 
-    fn predict(&self, prediction_vector: &Vec<f64>) -> f64 {
+    pub fn predict(&self, prediction_vector: &Vec<f64>) -> f64 {
         if self.net_input(prediction_vector) > 0.0 {
             return 1.0
         } else {
@@ -43,6 +42,7 @@ impl Perceptron {
         }
     }
 
+    //TODO replace this with a From trait impl
     fn normalize_to_bool(value: f64) -> bool {
         if value > 0.0 {
             true
@@ -56,12 +56,9 @@ impl Perceptron {
     /// This will loop for the number of times specified in the perceptron's epoch.
     /// Training consists of predicting the output, calculating the error and then adding the error times the learning rate to the weight
     /// Iterating in this way will cause the error to decrease over time, to the point where the weights can be used to make useful predictions.
-    fn train(&mut self, training_input_set: &Vec<Vec<f64>>) {
-        // TODO this just needs to create a vector (or maybe array) of length 1 less then the provided inputs
-        //TODO, optomize this. this is stupid
+    pub fn train(&mut self, training_input_set: &[Vec<f64>]) {
         let sample = &training_input_set[0];
-        // ignore the last element
-        self.weights = sample[0..sample.len()-1].iter().map(|_| 0.0).collect(); // set all weights in self to 0.0
+        self.weights = vec![0.0; sample.len() - 1]; // initialize the vector to 0.0 with the size of the input set
 
         // loop for number of epochs
         for _ in 0..self.epochs {
@@ -91,10 +88,6 @@ impl Perceptron {
 }
 
 
-fn main() {
-    println!("Hello, world!");
-}
-
 mod tests {
 
     use super::*;
@@ -119,14 +112,14 @@ mod tests {
     #[test]
     fn training_test() {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 30);
-        perceptron.train(&vec!(vec!(0.0, 0.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, 0.0, -1.0), vec!(0.0, 1.0, -1.0)));
+        perceptron.train(&[vec!(0.0, 0.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, 0.0, -1.0), vec!(0.0, 1.0, -1.0)]);
         println!("{:?}", perceptron);
     }
 
     #[test]
     fn train_and_predict_and() {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 5);
-        perceptron.train(&vec!(vec!(-1.0, -1.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)));
+        perceptron.train(&[vec!(-1.0, -1.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)]);
 
         println!("Predicting with perceptron: {:?}", perceptron);
         assert_eq!(-1.0, perceptron.predict(&vec!(1.0, -1.0)));
@@ -138,7 +131,7 @@ mod tests {
     #[test]
     fn train_and_predict_nand() {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 5);
-        perceptron.train(&vec!(vec!(-1.0, -1.0, 1.0), vec!(1.0, 1.0, -1.0), vec!(1.0, -1.0, 1.0), vec!(-1.0, 1.0, 1.0)));
+        perceptron.train(&[vec!(-1.0, -1.0, 1.0), vec!(1.0, 1.0, -1.0), vec!(1.0, -1.0, 1.0), vec!(-1.0, 1.0, 1.0)]);
 
         println!("Predicting with perceptron: {:?}", perceptron);
         assert_eq!(1.0, perceptron.predict(&vec!(1.0, -1.0)));
@@ -162,7 +155,7 @@ mod tests {
     #[test]
     fn train_and_predict_nor() {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 5);
-        perceptron.train(&vec!(vec!(-1.0, -1.0, 1.0), vec!(1.0, 1.0, -1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)));
+        perceptron.train(&[vec!(-1.0, -1.0, 1.0), vec!(1.0, 1.0, -1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)]);
 
         println!("Predicting with perceptron: {:?}", perceptron);
         assert_eq!(-1.0, perceptron.predict(&vec!(1.0, -1.0)));
@@ -174,7 +167,7 @@ mod tests {
     #[test]
     fn train_and_predict_invert() {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 5);
-        perceptron.train(&vec!(vec!(-1.0, 1.0), vec!(1.0, -1.0)));
+        perceptron.train(&[vec!(-1.0, 1.0), vec!(1.0, -1.0)]);
 
         println!("Predicting with perceptron: {:?}", perceptron);
         assert_eq!(-1.0, perceptron.predict(&vec!(1.0)));
@@ -184,7 +177,7 @@ mod tests {
     #[test]
     fn train_and_predict_identity() {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 5);
-        perceptron.train(&vec!(vec!(-1.0, -1.0), vec!(1.0, 1.0)));
+        perceptron.train(&[vec!(-1.0, -1.0), vec!(1.0, 1.0)]);
 
         println!("Predicting with perceptron: {:?}", perceptron);
         assert_eq!(1.0, perceptron.predict(&vec!(1.0)));
@@ -195,7 +188,7 @@ mod tests {
     fn train_and_operation_1000_times(b: &mut Bencher) {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 1000);
         b.iter(|| {
-            perceptron.train(&vec!(vec!(-1.0, -1.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)));
+            perceptron.train(&[vec!(-1.0, -1.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)]);
         } );
     }
 
@@ -203,7 +196,7 @@ mod tests {
     fn train_and_operation_1_times(b: &mut Bencher) {
         let mut perceptron: Perceptron = Perceptron::new(0.1, 1);
         b.iter(|| {
-            perceptron.train(&vec!(vec!(-1.0, -1.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)));
+            perceptron.train(&[vec!(-1.0, -1.0, -1.0), vec!(1.0, 1.0, 1.0), vec!(1.0, -1.0, -1.0), vec!(-1.0, 1.0, -1.0)]);
         } );
     }
 }
