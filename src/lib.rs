@@ -2,17 +2,27 @@
 
 extern crate test;
 use std::convert::{From,Into};
+use std::boxed::Box;
 
 #[derive(Debug)]
 pub struct Perceptron {
     learning_rate: f64, // constant value to alter the weights by per training iteration
     epochs: usize, // Number of times to iterate while training.
     weights: Vec<f64>, // The other values used in predictions, they are multiplied with the input values when calculating activation.
-    base_weight: f64 // The first value used in predictions, not multiplied with input values when calculating activation.
+    base_weight: f64, // The first value used in predictions, not multiplied with input values when calculating activation. Sometimes referred to as a bias.
+    output_connections: Vec<Connection>
 }
 
+#[derive(Debug)]
+struct Connection {
+    weight: f64,
+    target: Box<Perceptron>
+}
 
-
+#[derive(Debug)]
+struct NeuralNetwork {
+    layers: Vec<Perceptron>
+}
 
 
 
@@ -23,7 +33,8 @@ impl Perceptron {
             learning_rate: learning_rate,
             epochs: epochs,
             weights: vec!(),
-            base_weight: 0.0
+            base_weight: 0.0,
+            output_connections: vec!()
         }
     }
 
@@ -89,6 +100,10 @@ impl Perceptron {
     pub fn set_weights(&mut self, base: f64, weights: Vec<f64>) {
         self.base_weight = base;
         self.weights = weights;
+    }
+
+    fn add_output_connection(&mut self, output_connection: Connection) {
+        self.output_connections.push(output_connection);
     }
 }
 
@@ -195,6 +210,23 @@ mod tests {
         assert_eq!(1.0, perceptron.predict(&vec!(False, False)));
         assert_eq!(-1.0, perceptron.predict(&vec!(True, True)));
     }
+
+//    #[test]
+//    fn train_and_predict_xor() {
+//
+//        let mut and_perceptron: Perceptron = Perceptron::new(0.1, 5);
+//        and_perceptron.train(&[vec!(False, False, False), vec!(True, True, True), vec!(True, False, False), vec!(False, True, False)]);
+//        let mut or_perceptron: Perceptron = Perceptron::new(0.1, 5);
+//        or_perceptron.train(&[vec!(False, False, False), vec!(True, True, True), vec!(True, False, True), vec!(False, True, True)]);
+//        let mut xor_perceptron: Perceptron = Perceptron::new(0.1, 5);
+//        xor_perceptron.train(&[vec!(False, False, True), vec!(True, True, False), vec!(True, False, False), vec!(False, True, False)]);
+//
+//        println!("Predicting with perceptron: {:?}", xor_perceptron);
+//        assert_eq!(-1.0, xor_perceptron.predict(&vec!(True, False)));
+//        assert_eq!(-1.0, xor_perceptron.predict(&vec!(False, True)));
+//        assert_eq!(1.0, xor_perceptron.predict(&vec!(False, False)));
+//        assert_eq!(-1.0, xor_perceptron.predict(&vec!(True, True)));
+//    }
 
     #[test]
     fn train_and_predict_invert() {
