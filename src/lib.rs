@@ -19,7 +19,7 @@ impl Perceptron {
             learning_rate: learning_rate,
             epochs: epochs,
             weights: vec!(),
-            base_weight: 1.0 // I don't know what an appropriate base weight should be, 0 is obviously wrong, because it could never move from there.
+            base_weight: 0.0
         }
     }
 
